@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lộ Trình Tương Tác Học Tiếng Anh Giao Tiếp (với Gemini AI)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Warm Neutrals with Teal Accent) -->
+    <!-- Application Structure Plan: The application uses a single-page, section-based architecture with a sticky top navigation bar. This design transforms the linear report into a user-driven, interactive tool. Users can either follow a logical learning path (Foundation -> Practice -> AI Sandbox -> Roadmap) or use the navigation to jump directly to a specific topic for quick reference. The new "AI Sandbox" section allows for freeform, user-driven content generation, making the app a highly personalized learning partner. -->
+    <!-- Visualization & Content Choices:
+    - Report Info: Importance of 5 key tenses (Present Perfect is 60-70%). Goal: Compare, Inform. Viz: Doughnut Chart (Chart.js). Interaction: Hover to see percentages. Justification: Visually emphasizes the 80/20 principle of focusing on high-impact grammar.
+    - Report Info: Thematic Vocabulary Lists. Goal: Organize, Explore. Viz: Filterable card grid (HTML/CSS/JS). Interaction: Select a theme; click a button on a word card to call Gemini API for example sentences displayed in a modal. Justification: Provides contextual, on-demand learning.
+    - Report Info: Communication Practice. Goal: Practice, Feedback. Viz: Interactive AI Arena (HTML/CSS/JS). Interaction: User gets an AI-generated scenario, writes a response, and gets detailed AI feedback. Justification: Creates an endlessly replayable, personalized practice loop.
+    - NEW FEATURE: AI Sandbox. Goal: Explore, Create. Viz: Text input and output areas. Interaction: User types a freeform request, and Gemini API generates custom content (dialogues, examples, explanations). Justification: This provides ultimate flexibility and turns the tool into a creative learning partner, addressing any specific learning need the user has on the spot.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            width: 80vw;
+            max-width: 450px;
+            max-height: 450px;
+        }
+        .tab-button.active {
+            border-color: #0d9488;
+            background-color: #ccfbf1;
+            color: #0d9488;
+            font-weight: 600;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .accordion-button.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+        .nav-link.active {
+            color: #0d9488;
+            font-weight: 700;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #0d9488;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .pyramid-level {
+            padding: 0.5rem;
+            color: white;
+            text-align: center;
+            font-weight: 600;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl md:text-2xl font-bold text-teal-700">Làm chủ Tiếng Anh Giao tiếp</h1>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#foundation" class="nav-link text-stone-600 hover:text-teal-600 transition">Nền tảng</a>
+                    <a href="#practice" class="nav-link text-stone-600 hover:text-teal-600 transition">Thực hành</a>
+                    <a href="#ai-sandbox" class="nav-link text-stone-600 hover:text-teal-600 transition">Hộp cát AI</a>
+                    <a href="#roadmap" class="nav-link text-stone-600 hover:text-teal-600 transition">Lộ trình</a>
+                    <a href="#resources" class="nav-link text-stone-600 hover:text-teal-600 transition">Tài nguyên</a>
+                </nav>
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-stone-600 hover:bg-teal-50 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-stone-200">
+            <a href="#foundation" class="block py-2 px-4 text-sm text-stone-600 hover:bg-teal-50">Nền tảng</a>
+            <a href="#practice" class="block py-2 px-4 text-sm text-stone-600 hover:bg-teal-50">Thực hành</a>
+            <a href="#ai-sandbox" class="block py-2 px-4 text-sm text-stone-600 hover:bg-teal-50">Hộp cát AI</a>
+            <a href="#roadmap" class="block py-2 px-4 text-sm text-stone-600 hover:bg-teal-50">Lộ trình</a>
+            <a href="#resources" class="block py-2 px-4 text-sm text-stone-600 hover:bg-teal-50">Tài nguyên</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="intro" class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-stone-800 mb-4">Con đường đến sự trôi chảy bắt đầu từ đây</h2>
+            <p class="max-w-3xl mx-auto text-stone-600">
+                Chào mừng bạn đến với lộ trình học tiếng Anh giao tiếp tương tác, nay đã được tích hợp AI. Hãy khám phá các nền tảng cốt lõi, thực hành với AI và đi theo một lộ trình rõ ràng để chinh phục tiếng Anh.
+            </p>
+        </section>
+
+        <section id="foundation" class="mb-16 scroll-mt-20">
+             <h2 class="text-2xl md:text-3xl font-bold text-teal-700 mb-2">Phần 1: Nền tảng Cốt lõi</h2>
+            <p class="text-stone-600 mb-8">Đây là nơi xây dựng nền móng vững chắc cho khả năng giao tiếp. Chúng tôi tập trung vào 20% kiến thức tạo ra 80% hiệu quả. Hãy tương tác với các công cụ dưới đây để nắm vững những yếu tố quan trọng nhất, nay có thêm sự trợ giúp từ AI.</p>
+
+            <div class="grid md:grid-cols-5 gap-8">
+                <div class="md:col-span-3 bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-xl font-bold mb-4">Ngữ pháp Trọng tâm (80/20)</h3>
+                    
+                    <div id="grammar-tabs-container">
+                        <div class="border-b border-stone-200 mb-4">
+                            <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                                <button data-tab="tenses" class="tab-button active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">5 Thì Cốt lõi</button>
+                                <button data-tab="modals" class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Động từ Khiếm khuyết</button>
+                                <button data-tab="prepositions" class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Giới từ IN/ON/AT</button>
+                            </nav>
+                        </div>
+                        <div id="tenses-content" class="tab-content">
+                             <div id="tenses-accordion"></div>
+                        </div>
+                        <div id="modals-content" class="tab-content hidden">
+                            <div id="modals-accordion"></div>
+                        </div>
+                        <div id="prepositions-content" class="tab-content hidden">
+                            <p class="text-sm text-stone-600 mb-4">Sử dụng mô hình kim tự tháp ngược để ghi nhớ: đi từ tổng quát (IN) đến cụ thể (ON) và chính xác nhất (AT).</p>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div id="time-pyramid"></div>
+                                <div id="place-pyramid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-xl font-bold mb-4">Tầm quan trọng các Thì</h3>
+                    <p class="text-sm text-stone-600 mb-4">Biểu đồ này minh họa tần suất sử dụng tương đối của các thì trong giao tiếp hàng ngày. Điều này lý giải tại sao việc tập trung vào 5 thì cốt lõi lại hiệu quả đến vậy.</p>
+                    <div class="chart-container">
+                        <canvas id="tensesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-white p-6 rounded-xl shadow-sm">
+                <h3 class="text-xl font-bold mb-4">Xây dựng Vốn từ vựng Chiến lược</h3>
+                <p class="text-sm text-stone-600 mb-6">Học từ vựng theo chủ đề giúp bạn áp dụng ngay vào các cuộc hội thoại quen thuộc. Hãy chọn một chủ đề, sau đó nhấp vào nút ✨ để AI tạo câu ví dụ cho bạn!</p>
+                <div class="mb-4">
+                    <select id="vocab-theme-selector" class="w-full md:w-1/3 p-2 border border-stone-300 rounded-md bg-white focus:ring-teal-500 focus:border-teal-500">
+                    </select>
+                </div>
+                <div id="vocab-display" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                </div>
+            </div>
+        </section>
+
+        <section id="practice" class="mb-16 scroll-mt-20">
+            <h2 class="text-2xl md:text-3xl font-bold text-teal-700 mb-2">Phần 2: Từ Lý thuyết đến Thực chiến</h2>
+             <p class="text-stone-600 mb-8">Kiến thức chỉ thực sự hữu ích khi được áp dụng. Phần này cung cấp các công cụ và mẫu câu để bạn biến ngữ pháp và từ vựng thành lời nói tự nhiên trong các tình huống thực tế. Hãy khám phá bộ công cụ giao tiếp đa dạng của chúng tôi.</p>
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+                <h3 class="text-xl font-bold mb-4">Bộ Công cụ Giao tiếp theo Tình huống</h3>
+                <div id="practice-tabs-container">
+                    <div class="border-b border-stone-200 mb-4">
+                        <nav class="-mb-px flex space-x-4 overflow-x-auto" aria-label="Tabs">
+                            <button data-tab="requests" class="tab-button active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Yêu cầu & Đề nghị</button>
+                            <button data-tab="advice" class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Cho Lời khuyên</button>
+                            <button data-tab="opinions" class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Bày tỏ Quan điểm</button>
+                        </nav>
+                    </div>
+                    <div id="requests-content" class="tab-content"></div>
+                    <div id="advice-content" class="tab-content hidden"></div>
+                    <div id="opinions-content" class="tab-content hidden"></div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-teal-50 to-emerald-50 p-6 rounded-xl shadow-sm border border-teal-100">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="text-2xl">✨</span> Sân Chơi Luyện Tập AI</h3>
+                <p class="text-sm text-stone-600 mb-4">Sẵn sàng thực hành? Nhấn nút bên dưới để AI tạo một tình huống giao tiếp. Viết câu trả lời của bạn và nhận phản hồi tức thì!</p>
+                <button id="generate-scenario-btn" class="mb-4 inline-flex items-center gap-2 bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v1.126a9.002 9.002 0 015.122 5.122H18a1 1 0 01.954.88l.035.116a1 1 0 01-1.88.168L17 10h-1.126a9.002 9.002 0 01-5.122-5.122V4a1 1 0 01-.88-.954L9.842 3A1 1 0 0111.17 1.76l.13.016zM10 4.874A6.002 6.002 0 004.874 10H4a1 1 0 100 2h.874A6.002 6.002 0 0010 17.126V18a1 1 0 102 0v-.874A6.002 6.002 0 0017.126 12H18a1 1 0 100-2h-.874A6.002 6.002 0 0012 4.874L11.874 5H12a5 5 0 015 5v.126A6.002 6.002 0 0012.126 15H12a5 5 0 01-5-5v-.126A6.002 6.002 0 0011.874 5H12v-.126z" clip-rule="evenodd" /></svg>
+                    Tạo tình huống mới
+                </button>
+                
+                <div id="ai-practice-area" class="space-y-4">
+                    <div id="scenario-display" class="p-4 bg-white rounded-md border border-stone-200 min-h-[60px] text-stone-700 italic">Nhấn nút trên để bắt đầu...</div>
+                    <textarea id="user-response-input" class="w-full p-3 border border-stone-300 rounded-md focus:ring-teal-500 focus:border-teal-500" rows="3" placeholder="Viết câu trả lời của bạn ở đây..."></textarea>
+                    <button id="get-feedback-btn" class="bg-teal-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-900 transition shadow disabled:bg-gray-400 disabled:cursor-not-allowed">✨ Nhận phản hồi từ AI</button>
+                    <div id="feedback-display" class="p-4 bg-white rounded-md border border-stone-200 min-h-[60px] text-stone-700 hidden"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="ai-sandbox" class="mb-16 scroll-mt-20">
+            <h2 class="text-2xl md:text-3xl font-bold text-teal-700 mb-2">Phần 3: Hộp cát Sáng tạo với AI</h2>
+            <p class="text-stone-600 mb-8">Đây là không gian tự do để bạn khám phá. Hãy yêu cầu AI tạo ra bất cứ điều gì bạn cần để học: một đoạn hội thoại, các câu ví dụ cho một cấu trúc ngữ pháp, hoặc thậm chí là một email mẫu. Hãy sáng tạo nhé!</p>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="space-y-4">
+                    <label for="ai-request-input" class="block font-semibold text-stone-700">Nhập yêu cầu của bạn tại đây:</label>
+                    <textarea id="ai-request-input" class="w-full p-3 border border-stone-300 rounded-md focus:ring-teal-500 focus:border-teal-500" rows="4" placeholder="Ví dụ: tạo một đoạn hội thoại ngắn về việc đặt phòng khách sạn qua điện thoại, kèm giải thích các cụm từ quan trọng."></textarea>
+                    <button id="generate-custom-btn" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition shadow inline-flex items-center gap-2">🚀 Tạo nội dung</button>
+                    <div id="custom-output-display" class="p-4 mt-4 bg-stone-50 rounded-md border border-stone-200 min-h-[100px] text-stone-800">Kết quả sẽ hiện ở đây...</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="mb-16 scroll-mt-20">
+            <h2 class="text-2xl md:text-3xl font-bold text-teal-700 mb-2">Phần 4: Lộ trình và Phương pháp Luyện tập</h2>
+            <p class="text-stone-600 mb-8">Sự trôi chảy là kết quả của luyện tập kiên trì và có phương pháp. Tại đây, bạn sẽ tìm thấy một lộ trình 12 tuần chi tiết và các kỹ thuật luyện tập chuyên sâu để biến kỹ năng thành phản xạ tự nhiên. Hãy khám phá từng tuần để thấy sự tiến bộ của mình.</p>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h3 class="text-xl font-bold mb-4">Lộ trình Tự học trong 12 Tuần</h3>
+                <div id="roadmap-accordion" class="space-y-2"></div>
+            </div>
+             <div class="mt-8 bg-white p-6 rounded-xl shadow-sm">
+                <h3 class="text-xl font-bold mb-4">Các Kỹ thuật Luyện tập Chuyên sâu</h3>
+                <div id="techniques-accordion" class="space-y-2"></div>
+            </div>
+        </section>
+
+        <section id="resources" class="scroll-mt-20">
+            <h2 class="text-2xl md:text-3xl font-bold text-teal-700 mb-2">Phần 5: Kho Tài nguyên Vàng</h2>
+            <p class="text-stone-600 mb-8">Việc lựa chọn tài liệu phù hợp sẽ giúp quá trình học thú vị hơn. Dưới đây là danh sách các tài nguyên chất lượng cao được tuyển chọn để hỗ trợ bạn trên hành trình chinh phục tiếng Anh.</p>
+            <div id="resources-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white mt-16 border-t border-stone-200">
+        <div class="container mx-auto py-6 px-4 text-center text-stone-500">
+            <p>&copy; 2025 Lộ trình Tương tác Học Tiếng Anh. Chuyển thể từ báo cáo chi tiết.</p>
+            <p class="text-sm mt-1">Được tạo ra để giúp bạn giao tiếp tự tin và hiệu quả.</p>
+        </div>
+    </footer>
+    
+    <div id="ai-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="text-lg font-bold text-teal-800">Phản hồi từ AI</h3>
+                <button id="modal-close-btn" class="text-stone-500 hover:text-stone-800">&times;</button>
+            </div>
+            <div id="modal-body" class="p-6 overflow-y-auto">
+                <div class="flex justify-center items-center h-32">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const data = {
+                tenses: [
+                    { title: "Hiện tại Đơn (Present Simple)", content: "<b>Chức năng:</b> Diễn tả thói quen, sự thật hiển nhiên, lịch trình.<br><b>Công thức:</b> S + V(s/es)<br><b>Ví dụ:</b> <i>She works in an office.</i>" },
+                    { title: "Quá khứ Đơn (Past Simple)", content: "<b>Chức năng:</b> Kể lại một sự kiện đã kết thúc trong quá khứ.<br><b>Công thức:</b> S + V2/ed<br><b>Ví dụ:</b> <i>I visited my grandparents last weekend.</i>" },
+                    { title: "Tương lai Đơn (Future Simple)", content: "<b>Chức năng:</b> Diễn tả quyết định tức thời, dự đoán, lời hứa.<br><b>Công thức:</b> S + will + V<br><b>Ví dụ:</b> <i>I think it will rain tomorrow.</i>" },
+                    { title: "Hiện tại Tiếp diễn (Present Continuous)", content: "<b>Chức năng:</b> Diễn tả hành động đang xảy ra hoặc kế hoạch tương lai gần.<br><b>Công thức:</b> S + am/is/are + V-ing<br><b>Ví dụ:</b> <i>I am preparing for my presentation.</i>" },
+                    { title: "Hiện tại Hoàn thành (Present Perfect)", content: "<b>Chức năng:</b> Diễn tả kinh nghiệm, trải nghiệm; hành động có kết nối quá khứ và hiện tại.<br><b>Công thức:</b> S + have/has + V3/ed<br><b>Ví dụ:</b> <i>I have been to Paris twice.</i>" }
+                ],
+                modals: [
+                    { title: "Diễn tả Khả năng (Ability)", content: "<b>can:</b> I can speak English.<br><b>could:</b> I could run fast when I was young.<br><b>be able to:</b> I was able to finish the test." },
+                    { title: "Đưa ra Lời khuyên (Advice)", content: "<b>should:</b> You should get some rest.<br><b>ought to:</b> You ought to apologize.<br><b>had better:</b> You'd better hurry." },
+                    { title: "Diễn tả Sự bắt buộc (Obligation)", content: "<b>must:</b> I must finish this report.<br><b>have to:</b> You have to drive on the left.<br><b>mustn't:</b> You mustn't smoke here.<br><b>don't have to:</b> You don't have to wear a tie." },
+                    { title: "Xin phép & Đề nghị (Permission & Requests)", content: "<b>can:</b> Can I use your pen?<br><b>could:</b> Could I ask a question?<br><b>may:</b> May I come in?"},
+                    { title: "Đưa ra Suy đoán (Deduction/Possibility)", content: "<b>may/might/could:</b> It might rain later.<br><b>must:</b> The lights are on. They must be at home."}
+                ],
+                prepositions: {
+                    time: {
+                        title: "Kim tự tháp Thời gian",
+                        IN: "<b>IN (Lớn nhất):</b> Thế kỷ, Thập kỷ, Năm, Mùa, Tháng. <br><i>in 2024, in August, in the morning</i>",
+                        ON: "<b>ON (Cụ thể hơn):</b> Ngày trong tuần, Ngày tháng. <br><i>on Monday, on June 15th</i>",
+                        AT: "<b>AT (Chính xác nhất):</b> Giờ cụ thể, Khoảnh khắc. <br><i>at 7 PM, at night</i>"
+                    },
+                    place: {
+                        title: "Kim tự tháp Nơi chốn",
+                        IN: "<b>IN (Không gian 3D):</b> Quốc gia, Thành phố, Phòng. <br><i>in Vietnam, in a room</i>",
+                        ON: "<b>ON (Bề mặt 2D):</b> Đường, Sàn nhà, Bàn. <br><i>on the table, on Le Loi street</i>",
+                        AT: "<b>AT (Điểm cụ thể):</b> Địa chỉ, Bến xe buýt, Trường học. <br><i>at the bus stop, at 75 Ho Tung Mau street</i>"
+                    }
+                },
+                vocabulary: {
+                    "Chào hỏi & Giới thiệu": [
+                        { word: "Hello", ipa: "/həˈləʊ/", meaning: "Xin chào" },
+                        { word: "My name is...", ipa: "/maɪ neɪm ɪz/", meaning: "Tên tôi là..." },
+                        { word: "Nice to meet you", ipa: "/naɪs tuː miːt juː/", meaning: "Rất vui được gặp bạn" },
+                        { word: "Thank you", ipa: "/θæŋk juː/", meaning: "Cảm ơn bạn" },
+                        { word: "Sorry", ipa: "/ˈsɒri/", meaning: "Xin lỗi" },
+                    ],
+                    "Công việc & Văn phòng": [
+                        { word: "Office", ipa: "/ˈɒfɪs/", meaning: "Văn phòng" },
+                        { word: "Colleague", ipa: "/ˈkɒliːɡ/", meaning: "Đồng nghiệp" },
+                        { word: "Meeting", ipa: "/ˈmiːtɪŋ/", meaning: "Cuộc họp" },
+                        { word: "Deadline", ipa: "/ˈdɛdlaɪn/", meaning: "Hạn chót" },
+                        { word: "Project", ipa: "/ˈprɒdʒɛkt/", meaning: "Dự án" },
+                    ],
+                    "Ăn uống & Nhà hàng": [
+                        { word: "Restaurant", ipa: "/ˈrestrɒnt/", meaning: "Nhà hàng" },
+                        { word: "Menu", ipa: "/ˈmɛnjuː/", meaning: "Thực đơn" },
+                        { word: "Order", ipa: "/ˈɔːdə/", meaning: "Gọi món" },
+                        { word: "Dish", ipa: "/dɪʃ/", meaning: "Món ăn" },
+                        { word: "Bill", ipa: "/bɪl/", meaning: "Hóa đơn" },
+                    ],
+                    "Du lịch & Chỉ đường": [
+                        { word: "Travel", ipa: "/ˈtrævl/", meaning: "Du lịch" },
+                        { word: "Hotel", ipa: "/həʊˈtel/", meaning: "Khách sạn" },
+                        { word: "Airport", ipa: "/ˈeəpɔːt/", meaning: "Sân bay" },
+                        { word: "Ticket", ipa: "/ˈtɪkɪt/", meaning: "Vé" },
+                        { word: "Map", ipa: "/mæp/", meaning: "Bản đồ" },
+                    ],
+                },
+                practice: {
+                    requests: {
+                        title: "Đưa ra Yêu cầu & Đề nghị",
+                        items: [
+                            { category: "Yêu cầu (Making a request)", phrases: ["<b>Can you...?:</b> Can you pass the salt, please?", "<b>Could you...?:</b> Could you open the window, please?", "<b>Would you mind + V-ing?:</b> Would you mind helping me?"] },
+                            { category: "Đề nghị (Making a suggestion)", phrases: ["<b>Let's...:</b> Let's go to the cinema.", "<b>How about + V-ing?:</b> How about having pizza?", "<b>Why don't we...?:</b> Why don't we visit the museum?"] }
+                        ]
+                    },
+                    advice: {
+                        title: "Cho Lời khuyên & Gợi ý",
+                        items: [
+                            { category: "Cấu trúc khuyên", phrases: ["<b>You should...:</b> You should talk to your boss.", "<b>If I were you, I would...:</b> If I were you, I would accept the offer.", "<b>I suggest + V-ing:</b> I suggest taking a short break."] },
+                            { category: "Cách xin lời khuyên", phrases: ["What should I do?", "What do you think I should do?", "Can you give me some advice?"] }
+                        ]
+                    },
+                    opinions: {
+                        title: "Bày tỏ Quan điểm",
+                        items: [
+                             { category: "Đồng ý", phrases: ["I agree.", "I completely agree.", "That's so true.", "I couldn't agree more."] },
+                             { category: "Không đồng ý (lịch sự)", phrases: ["I'm sorry, but I disagree.", "I'm afraid I can't agree with you.", "I see it differently.", "I'm not so sure about that."] },
+                             { category: "Đồng ý một phần", phrases: ["I agree up to a point, but...", "I see your point, but..."] }
+                        ]
+                    }
+                },
+                 roadmap: [
+                    {
+                        phase: "Giai đoạn 1: Xây dựng Nền tảng (Tuần 1-4)",
+                        weeks: [
+                            { week: "Tuần 1", focus: "Phát âm IPA, Thì Hiện tại Đơn, Từ vựng Chào hỏi/Giới thiệu." },
+                            { week: "Tuần 2", focus: "Nối âm, Thì Quá khứ Đơn, Từ vựng Gia đình/Hoạt động hàng ngày." },
+                            { week: "Tuần 3", focus: "Ngữ điệu, Thì Tương lai Đơn & HTTD, Từ vựng Thời tiết/Quần áo." },
+                            { week: "Tuần 4", focus: "Trọng âm, Thì Hiện tại Hoàn thành, Từ vựng Ăn uống/Nhà hàng." }
+                        ]
+                    },
+                    {
+                        phase: "Giai đoạn 2: Mở rộng và Kết nối (Tuần 5-8)",
+                        weeks: [
+                            { week: "Tuần 5", focus: "Modal verbs (can, could, should), Từ vựng Công việc." },
+                            { week: "Tuần 6", focus: "Modal verbs (must, have to, may), Từ vựng Du lịch." },
+                            { week: "Tuần 7", focus: "Giới từ IN, ON, AT, Mẫu câu Yêu cầu/Đề nghị." },
+                            { week: "Tuần 8", focus: "Cấu trúc câu phức, Mẫu câu Lời khuyên, Từ vựng Miêu tả người." }
+                        ]
+                    },
+                    {
+                        phase: "Giai đoạn 3: Kích hoạt và Tự động hóa (Tuần 9-12)",
+                        weeks: [
+                            { week: "Tuần 9", focus: "Mẫu câu Bày tỏ quan điểm (Đồng ý), Bắt đầu Shadowing." },
+                            { week: "Tuần 10", focus: "Mẫu câu (Không đồng ý), Tăng độ khó Shadowing." },
+                            { week: "Tuần 11", focus: "Tập 'Suy nghĩ bằng tiếng Anh', Ghi âm và phân tích." },
+                            { week: "Tuần 12", focus: "Tổng ôn tập, Thử thách nói 2-3 phút, Giao tiếp thực tế." }
+                        ]
+                    }
+                ],
+                techniques: [
+                    { title: "Phương pháp Shadowing (Nói nhại)", content: "Là kỹ thuật lặp lại gần như đồng thời một đoạn audio của người bản xứ. <br><b>Lợi ích:</b> Cải thiện phát âm, ngữ điệu, phá vỡ thói quen dịch thầm và tăng tự tin. <br><b>Các bước:</b> 1. Chọn tài liệu phù hợp (ngắn, có transcript). 2. Nghe và đọc theo transcript. 3. Bắt đầu nói nhại, bắt chước mọi thứ. 4. Ghi âm và so sánh." },
+                    { title: "Tập Suy nghĩ bằng Tiếng Anh", content: "Là kỹ năng liên kết trực tiếp ý tưởng với ngôn ngữ tiếng Anh, không qua bước dịch. <br><b>Cách làm:</b> Bắt đầu bằng việc gọi tên đồ vật xung quanh, sau đó tạo câu đơn về hành động đang làm, và dần dần độc thoại nội tâm bằng tiếng Anh." },
+                    { title: "Học theo Cụm từ (Learn in Chunks)", content: "Ngôn ngữ tự nhiên được tạo thành từ các cụm từ (collocations), không phải từ đơn lẻ. <br><b>Ví dụ:</b> Thay vì học 'decision', hãy học 'make a decision'. Điều này giúp câu nói tự nhiên và trôi chảy hơn." }
+                ],
+                resources: [
+                    { type: 'youtube', title: 'BBC Learning English', desc: 'Kênh uy tín hàng đầu, bài học phân cấp rõ ràng, giọng đọc chuẩn.' },
+                    { type: 'youtube', title: 'Learn English with TV Series', desc: 'Học từ vựng và cách diễn đạt qua các đoạn phim nổi tiếng, rất thú vị.' },
+                    { type: 'youtube', title: 'Học Tiếng Anh Langmaster', desc: 'Kênh hữu ích cho người Việt, có giải thích bằng tiếng Việt, dễ tiếp cận.' },
+                    { type: 'podcast', title: '6 Minute English (BBC)', desc: 'Mỗi tập dài 6 phút, thảo luận về chủ đề thú vị, có transcript.' },
+                    { type: 'podcast', title: 'Easy Stories in English', desc: 'Các câu chuyện ngắn với giọng đọc rất chậm, rõ ràng, phù hợp cho người mới.' },
+                    { type: 'book', title: 'English Grammar in Use', desc: 'Sách "kinh điển" về ngữ pháp, giải thích rõ ràng và có bài tập đi kèm.' },
+                    { type: 'book', title: 'Tactics for Listening', desc: 'Bộ sách luyện nghe có hệ thống theo 3 cấp độ, tập trung vào giao tiếp hàng ngày.' },
+                ]
+            };
+
+            const API_KEY = ""; // Intentionally left blank as per instructions
+
+            const callGemini = async (prompt, elementToUpdate, setLoading) => {
+                setLoading(true);
+                const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) {
+                         throw new Error(`API call failed with status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                   
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        elementToUpdate.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    } else {
+                        throw new Error('Invalid response structure from API.');
+                    }
+                } catch (error) {
+                    console.error("Gemini API call error:", error);
+                    elementToUpdate.innerHTML = `<p class="text-red-500">Rất tiếc, đã có lỗi xảy ra khi kết nối với AI. Vui lòng thử lại sau.</p>`;
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            const createAccordionItem = (id, title, content, parentId) => {
+                const buttonId = `accordion-button-${id}`;
+                const contentId = `accordion-content-${id}`;
+                return `
+                    <div class="border border-stone-200 rounded-md">
+                        <h2>
+                            <button type="button" id="${buttonId}" aria-expanded="false" aria-controls="${contentId}" class="accordion-button flex items-center justify-between w-full p-4 font-medium text-left text-stone-700 bg-stone-100 hover:bg-teal-50 transition">
+                                <span>${title}</span>
+                                <svg class="accordion-arrow w-4 h-4 shrink-0 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                            </button>
+                        </h2>
+                        <div id="${contentId}" class="accordion-content" aria-labelledby="${buttonId}">
+                            <div class="p-4 border-t border-stone-200 bg-white text-sm text-stone-600">
+                                ${content}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const setupAccordion = (containerId) => {
+                const container = document.getElementById(containerId);
+                if(container) {
+                    container.addEventListener('click', e => {
+                        const button = e.target.closest('.accordion-button');
+                        if (button) {
+                            const content = document.getElementById(button.getAttribute('aria-controls'));
+                            const isExpanded = button.getAttribute('aria-expanded') === 'true';
+
+                            const allButtons = container.querySelectorAll('.accordion-button');
+                            allButtons.forEach(b => {
+                                if (b !== button) {
+                                    b.setAttribute('aria-expanded', 'false');
+                                    b.classList.remove('open');
+                                    const otherContent = document.getElementById(b.getAttribute('aria-controls'));
+                                    if(otherContent) otherContent.style.maxHeight = null;
+                                }
+                            });
+                            
+                            button.setAttribute('aria-expanded', !isExpanded);
+                            button.classList.toggle('open');
+                            content.style.maxHeight = !isExpanded ? content.scrollHeight + 'px' : null;
+                        }
+                    });
+                }
+            };
+            
+            const tensesAccordion = document.getElementById('tenses-accordion');
+            if (tensesAccordion) {
+                tensesAccordion.innerHTML = data.tenses.map((item, index) => createAccordionItem(`tense-${index}`, item.title, item.content, 'tenses-accordion')).join('');
+                setupAccordion('tenses-accordion');
+            }
+
+            const modalsAccordion = document.getElementById('modals-accordion');
+            if (modalsAccordion) {
+                modalsAccordion.innerHTML = data.modals.map((item, index) => createAccordionItem(`modal-${index}`, item.title, item.content, 'modals-accordion')).join('');
+                setupAccordion('modals-accordion');
+            }
+
+            const techniquesAccordion = document.getElementById('techniques-accordion');
+            if (techniquesAccordion) {
+                techniquesAccordion.innerHTML = data.techniques.map((item, index) => createAccordionItem(`tech-${index}`, item.title, item.content, 'techniques-accordion')).join('');
+                setupAccordion('techniques-accordion');
+            }
+            
+            const createPyramid = (pyramidData, containerId) => {
+                const container = document.getElementById(containerId);
+                if(container) {
+                    container.innerHTML = `
+                        <div class="text-center">
+                            <h4 class="font-bold text-lg mb-2 text-teal-700">${pyramidData.title}</h4>
+                            <div class="space-y-1">
+                                <div class="pyramid-level bg-teal-600 rounded-t-md" style="width: 100%;">IN</div>
+                                <div class="pyramid-level bg-teal-500" style="width: 80%;">ON</div>
+                                <div class="pyramid-level bg-teal-400 rounded-b-md" style="width: 60%;">AT</div>
+                            </div>
+                             <div class="mt-4 text-left p-3 bg-stone-50 rounded-lg border text-sm text-stone-600 space-y-2">
+                                <p>${pyramidData.IN}</p>
+                                <p>${pyramidData.ON}</p>
+                                <p>${pyramidData.AT}</p>
+                            </div>
+                        </div>`;
+                }
+            };
+
+            const timePyramidContainer = document.getElementById('time-pyramid');
+            if(timePyramidContainer) createPyramid(data.prepositions.time, 'time-pyramid');
+            const placePyramidContainer = document.getElementById('place-pyramid');
+            if(placePyramidContainer) createPyramid(data.prepositions.place, 'place-pyramid');
+
+            const vocabThemeSelector = document.getElementById('vocab-theme-selector');
+            const vocabDisplay = document.getElementById('vocab-display');
+            if (vocabThemeSelector && vocabDisplay) {
+                const themes = Object.keys(data.vocabulary);
+                themes.forEach(theme => {
+                    const option = document.createElement('option');
+                    option.value = theme;
+                    option.textContent = theme;
+                    vocabThemeSelector.appendChild(option);
+                });
+
+                const displayVocabByTheme = (theme) => {
+                    const words = data.vocabulary[theme];
+                    vocabDisplay.innerHTML = words.map(word => `
+                        <div class="bg-teal-50 p-3 rounded-lg border border-teal-100 flex flex-col justify-between">
+                            <div>
+                                <p class="font-bold text-teal-800">${word.word}</p>
+                                <p class="text-sm text-teal-600">${word.ipa}</p>
+                                <p class="text-sm text-stone-700 mt-1">${word.meaning}</p>
+                            </div>
+                            <button class="get-example-btn mt-3 text-sm bg-white border border-teal-200 text-teal-700 font-semibold py-1 px-2 rounded-md hover:bg-teal-100 transition" data-word="${word.word}">✨ Ví dụ</button>
+                        </div>
+                    `).join('');
+                };
+
+                vocabThemeSelector.addEventListener('change', (e) => {
+                    displayVocabByTheme(e.target.value);
+                });
+
+                displayVocabByTheme(themes[0]);
+            }
+            
+            const renderPracticeContent = (practiceData, containerId) => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+                        <div class="space-y-6">
+                            ${practiceData.items.map(item => `
+                                <div>
+                                    <h4 class="font-semibold text-teal-700 mb-2">${item.category}</h4>
+                                    <ul class="list-none space-y-2">
+                                        ${item.phrases.map(phrase => `<li class="p-3 bg-stone-50 rounded-md border border-stone-200 text-sm text-stone-700">${phrase}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            };
+            
+            renderPracticeContent(data.practice.requests, 'requests-content');
+            renderPracticeContent(data.practice.advice, 'advice-content');
+            renderPracticeContent(data.practice.opinions, 'opinions-content');
+
+            const roadmapAccordion = document.getElementById('roadmap-accordion');
+            if (roadmapAccordion) {
+                roadmapAccordion.innerHTML = data.roadmap.map((phase, phaseIndex) => `
+                    <div class="border border-stone-200 rounded-md">
+                        <h3 class="p-4 bg-stone-100 font-bold text-teal-800">${phase.phase}</h3>
+                        <div class="p-2 space-y-2">
+                            ${phase.weeks.map((week, weekIndex) => createAccordionItem(`roadmap-${phaseIndex}-${weekIndex}`, week.week, `<b>Trọng tâm:</b> ${week.focus}`, `roadmap-accordion`)).join('')}
+                        </div>
+                    </div>
+                `).join('');
+                setupAccordion('roadmap-accordion');
+            }
+            
+             const resourcesContainer = document.getElementById('resources-container');
+            if (resourcesContainer) {
+                const icons = {
+                    youtube: `<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.73,18.78 17.93,18.84C17.13,18.91 16.44,18.94 15.84,18.94L15,19C12.81,19 11.2,18.84 10.17,18.56C9.27,18.31 8.69,17.73 8.44,16.83C8.16,15.8 8,14.19 8,12L8.06,11.16C8.06,10.56 8.09,9.87 8.16,9.07C8.22,8.27 8.31,7.64 8.44,7.17C8.69,6.27 9.27,5.69 10.17,5.44C11.2,5.16 12.81,5 15,5L15.84,5.06C16.44,5.06 17.13,5.09 17.93,5.16C18.73,5.22 19.36,5.31 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z" /></svg>`,
+                    podcast: `<svg class="w-6 h-6 text-purple-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,15.09 18.23,17.67 15.65,18.96L12,14.31L8.35,18.96C5.77,17.67 4,15.09 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12C6,14.28 7.35,16.19 9.3,17.22L12,14.5L14.7,17.22C16.65,16.19 18,14.28 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" /></svg>`,
+                    book: `<svg class="w-6 h-6 text-sky-500" fill="currentColor" viewBox="0 0 24 24"><path d="M18,22A2,2 0 0,0 20,20V4C20,2.89 19.1,2 18,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18M11,4H13V16L11,14.5L9,16V4H11Z" /></svg>`
+                };
+                resourcesContainer.innerHTML = data.resources.map(res => `
+                    <div class="bg-white p-4 rounded-lg shadow-sm flex items-start space-x-4 transition hover:shadow-md">
+                        <div>${icons[res.type] || icons['book']}</div>
+                        <div>
+                            <h4 class="font-bold text-stone-800">${res.title}</h4>
+                            <p class="text-sm text-stone-600">${res.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            const ctx = document.getElementById('tensesChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['HT Hoàn thành', 'HT Đơn', 'QK Đơn', 'TL Đơn', 'HT Tiếp diễn', 'Khác'],
+                        datasets: [{
+                            label: 'Tần suất sử dụng',
+                            data: [60, 15, 10, 5, 5, 5],
+                            backgroundColor: ['#0d9488', '#14b8a6', '#5eead4', '#99f6e4', '#ccfbf1', '#f0f0f0'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    boxWidth: 12,
+                                    font: {
+                                        family: "'Be Vietnam Pro', sans-serif"
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const tabHandler = (containerId) => {
+                 const container = document.getElementById(containerId);
+                 if (!container) return;
+                 const tabButtons = container.querySelectorAll('.tab-button');
+                 const tabContents = container.querySelectorAll('.tab-content');
+
+                 tabButtons.forEach(button => {
+                     button.addEventListener('click', () => {
+                         tabButtons.forEach(btn => btn.classList.remove('active'));
+                         button.classList.add('active');
+                         const tabName = button.dataset.tab;
+                         tabContents.forEach(content => {
+                             if (content.id === `${tabName}-content`) {
+                                 content.classList.remove('hidden');
+                             } else {
+                                 content.classList.add('hidden');
+                             }
+                         });
+                     });
+                 });
+            };
+
+            tabHandler('grammar-tabs-container');
+            tabHandler('practice-tabs-container');
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                 document.querySelectorAll('#mobile-menu a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        mobileMenu.classList.add('hidden');
+                    });
+                });
+            }
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section[id]');
+            
+            const activateNavLink = () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            window.addEventListener('scroll', activateNavLink);
+            
+            const modal = document.getElementById('ai-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            
+            const showModal = (title, content) => {
+                modalTitle.textContent = title;
+                modalBody.innerHTML = content;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            };
+            
+            const hideModal = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modalBody.innerHTML = '';
+            };
+            
+            if (modalCloseBtn) {
+                 modalCloseBtn.addEventListener('click', hideModal);
+            }
+            if(modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        hideModal();
+                    }
+                });
+            }
+
+            const loadingSpinner = `<div class="flex justify-center items-center h-32"><div class="spinner"></div></div>`;
+
+            vocabDisplay.addEventListener('click', (e) => {
+                if (e.target.classList.contains('get-example-btn')) {
+                    e.target.disabled = true;
+                    const word = e.target.dataset.word;
+                    showModal(`Ví dụ cho từ "${word}"`, loadingSpinner);
+                    const prompt = `You are an English teacher. For the English word "${word}", please provide three clear example sentences. For each sentence, also provide the Vietnamese translation. The examples should be suitable for an intermediate English learner. Format the response as an HTML unordered list (<ul>).`;
+                    callGemini(prompt, modalBody, ()=>{});
+                    e.target.disabled = false;
+                }
+            });
+
+            const generateScenarioBtn = document.getElementById('generate-scenario-btn');
+            const scenarioDisplay = document.getElementById('scenario-display');
+            const userResponseInput = document.getElementById('user-response-input');
+            const getFeedbackBtn = document.getElementById('get-feedback-btn');
+            const feedbackDisplay = document.getElementById('feedback-display');
+
+            if(generateScenarioBtn) {
+                generateScenarioBtn.addEventListener('click', () => {
+                    const prompt = `Create a short, common, real-life English communication scenario for an intermediate learner. The scenario should require the user to respond. The scenario should be presented in English. Just provide the scenario, no extra text.`;
+                    callGemini(prompt, scenarioDisplay, (isLoading) => {
+                        generateScenarioBtn.disabled = isLoading;
+                        generateScenarioBtn.innerHTML = isLoading ? '<div class="spinner !w-5 !h-5 !border-2 !border-left-white"></div> Đang tạo...' : '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v1.126a9.002 9.002 0 015.122 5.122H18a1 1 0 01.954.88l.035.116a1 1 0 01-1.88.168L17 10h-1.126a9.002 9.002 0 01-5.122-5.122V4a1 1 0 01-.88-.954L9.842 3A1 1 0 0111.17 1.76l.13.016zM10 4.874A6.002 6.002 0 004.874 10H4a1 1 0 100 2h.874A6.002 6.002 0 0010 17.126V18a1 1 0 102 0v-.874A6.002 6.002 0 0017.126 12H18a1 1 0 100-2h-.874A6.002 6.002 0 0012 4.874L11.874 5H12a5 5 0 015 5v.126A6.002 6.002 0 0012.126 15H12a5 5 0 01-5-5v-.126A6.002 6.002 0 0011.874 5H12v-.126z" clip-rule="evenodd" /></svg> Tạo tình huống mới';
+                    });
+                    feedbackDisplay.classList.add('hidden');
+                    userResponseInput.value = '';
+                });
+            }
+
+            if(getFeedbackBtn) {
+                getFeedbackBtn.addEventListener('click', () => {
+                    const scenario = scenarioDisplay.textContent;
+                    const userResponse = userResponseInput.value;
+                    if (!userResponse.trim()) {
+                        alert("Vui lòng nhập câu trả lời của bạn.");
+                        return;
+                    }
+                    feedbackDisplay.classList.remove('hidden');
+                    feedbackDisplay.innerHTML = loadingSpinner;
+                    
+                    const prompt = `You are a friendly and helpful English teacher. Your student, a native Vietnamese speaker, was given the following scenario: "${scenario}". The student wrote this response in English: "${userResponse}". Please provide feedback on their response in Vietnamese. Use markdown for formatting. Structure your feedback in three parts: 1. **Nhận xét chung:** Briefly praise their effort and give an overall impression. 2. **Điểm cần cải thiện:** Point out any grammar, vocabulary, or politeness issues. Explain clearly and simply why it's a mistake. 3. **Gợi ý hay hơn:** Provide one or two alternative, more natural ways to respond in English, along with their Vietnamese translations.`;
+
+                    callGemini(prompt, feedbackDisplay, (isLoading) => {
+                         getFeedbackBtn.disabled = isLoading;
+                         getFeedbackBtn.textContent = isLoading ? 'Đang phân tích...' : '✨ Nhận phản hồi từ AI';
+                    });
+                });
+            }
+
+            const aiRequestInput = document.getElementById('ai-request-input');
+            const generateCustomBtn = document.getElementById('generate-custom-btn');
+            const customOutputDisplay = document.getElementById('custom-output-display');
+
+            if (generateCustomBtn) {
+                generateCustomBtn.addEventListener('click', () => {
+                    const userRequest = aiRequestInput.value;
+                    if (!userRequest.trim()) {
+                        alert("Vui lòng nhập yêu cầu của bạn.");
+                        return;
+                    }
+                    customOutputDisplay.innerHTML = loadingSpinner;
+                    
+                    const prompt = `You are a helpful and creative English teacher. A Vietnamese student has the following request: "${userRequest}". 
+                    Please fulfill this request by generating the content in English. 
+                    After the English content, provide a clear, concise explanation in Vietnamese. 
+                    The explanation should focus on key vocabulary, grammar structures, or phrases used. 
+                    Format your entire response using markdown for clarity (e.g., using ** for bolding).`;
+
+                    callGemini(prompt, customOutputDisplay, (isLoading) => {
+                        generateCustomBtn.disabled = isLoading;
+                        generateCustomBtn.innerHTML = isLoading ? '<div class="spinner !w-5 !h-5 !border-2 !border-left-white"></div> Đang xử lý...' : '🚀 Tạo nội dung';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
