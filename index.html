@@ -14,7 +14,7 @@
     <!-- Visualization & Content Choices:
     - Report Info: Importance of 5 key tenses (Present Perfect is 60-70%). Goal: Compare, Inform. Viz: Doughnut Chart (Chart.js). Interaction: Hover to see percentages. Justification: Visually emphasizes the 80/20 principle of focusing on high-impact grammar.
     - Report Info: Thematic Vocabulary Lists. Goal: Organize, Explore. Viz: Filterable card grid (HTML/CSS/JS). Interaction: Select a theme; click a button on a word card to call Gemini API for example sentences displayed in a modal. Justification: Provides contextual, on-demand learning.
-    - Report Info: Communication Practice. Goal: Practice, Feedback. Viz: Interactive AI Arena (HTML/CSS/JS). Interaction: User gets an AI-generated scenario, writes a response, and gets detailed AI feedback. Justification: Creates an endlessly replayable, personalized practice loop.
+    - Report Info: Communication Practice. Goal: Practice, Feedback. Viz: Interactive AI Arena (HTML/CSS/JS). Interaction: User gets an AI-generated scenario based on a randomized topic list, writes a response, and gets detailed AI feedback. Justification: Creates an endlessly replayable, diverse, and personalized practice loop, avoiding repetition.
     - NEW FEATURE: AI Sandbox. Goal: Explore, Create. Viz: Text input and output areas. Interaction: User types a freeform request, and Gemini API generates custom content (dialogues, examples, explanations). Justification: This provides ultimate flexibility and turns the tool into a creative learning partner, addressing any specific learning need the user has on the spot.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
@@ -180,7 +180,7 @@
 
             <div class="bg-gradient-to-br from-teal-50 to-emerald-50 p-6 rounded-xl shadow-sm border border-teal-100">
                 <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="text-2xl">✨</span> Sân Chơi Luyện Tập AI</h3>
-                <p class="text-sm text-stone-600 mb-4">Sẵn sàng thực hành? Nhấn nút bên dưới để AI tạo một tình huống giao tiếp. Viết câu trả lời của bạn và nhận phản hồi tức thì!</p>
+                <p class="text-sm text-stone-600 mb-4">Sẵn sàng thực hành? Nhấn nút bên dưới để AI tạo một tình huống giao tiếp đa dạng. Viết câu trả lời của bạn và nhận phản hồi tức thì!</p>
                 <button id="generate-scenario-btn" class="mb-4 inline-flex items-center gap-2 bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition shadow">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v1.126a9.002 9.002 0 015.122 5.122H18a1 1 0 01.954.88l.035.116a1 1 0 01-1.88.168L17 10h-1.126a9.002 9.002 0 01-5.122-5.122V4a1 1 0 01-.88-.954L9.842 3A1 1 0 0111.17 1.76l.13.016zM10 4.874A6.002 6.002 0 004.874 10H4a1 1 0 100 2h.874A6.002 6.002 0 0010 17.126V18a1 1 0 102 0v-.874A6.002 6.002 0 0017.126 12H18a1 1 0 100-2h-.874A6.002 6.002 0 0012 4.874L11.874 5H12a5 5 0 015 5v.126A6.002 6.002 0 0012.126 15H12a5 5 0 01-5-5v-.126A6.002 6.002 0 0011.874 5H12v-.126z" clip-rule="evenodd" /></svg>
                     Tạo tình huống mới
@@ -744,9 +744,23 @@
             const getFeedbackBtn = document.getElementById('get-feedback-btn');
             const feedbackDisplay = document.getElementById('feedback-display');
 
+            const scenarioTopics = [
+                "ordering food at a restaurant",
+                "asking for directions",
+                "making a doctor's appointment",
+                "checking into a hotel",
+                "returning a product to a store",
+                "talking about weekend plans",
+                "at the airport check-in counter",
+                "making a phone call to a friend",
+                "in a job interview",
+                "at a pharmacy"
+            ];
+
             if(generateScenarioBtn) {
                 generateScenarioBtn.addEventListener('click', () => {
-                    const prompt = `Create a short, common, real-life English communication scenario for an intermediate learner. The scenario should require the user to respond. The scenario should be presented in English. Just provide the scenario, no extra text.`;
+                    const randomTopic = scenarioTopics[Math.floor(Math.random() * scenarioTopics.length)];
+                    const prompt = `Create a short, common, real-life English communication scenario for an intermediate learner related to the topic: "${randomTopic}". The scenario should require the user to respond. The scenario should be presented in English only. Just provide the scenario, no extra text or labels.`;
                     callGemini(prompt, scenarioDisplay, (isLoading) => {
                         generateScenarioBtn.disabled = isLoading;
                         generateScenarioBtn.innerHTML = isLoading ? '<div class="spinner !w-5 !h-5 !border-2 !border-left-white"></div> Đang tạo...' : '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v1.126a9.002 9.002 0 015.122 5.122H18a1 1 0 01.954.88l.035.116a1 1 0 01-1.88.168L17 10h-1.126a9.002 9.002 0 01-5.122-5.122V4a1 1 0 01-.88-.954L9.842 3A1 1 0 0111.17 1.76l.13.016zM10 4.874A6.002 6.002 0 004.874 10H4a1 1 0 100 2h.874A6.002 6.002 0 0010 17.126V18a1 1 0 102 0v-.874A6.002 6.002 0 0017.126 12H18a1 1 0 100-2h-.874A6.002 6.002 0 0012 4.874L11.874 5H12a5 5 0 015 5v.126A6.002 6.002 0 0012.126 15H12a5 5 0 01-5-5v-.126A6.002 6.002 0 0011.874 5H12v-.126z" clip-rule="evenodd" /></svg> Tạo tình huống mới';
